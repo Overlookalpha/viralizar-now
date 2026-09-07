@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viralizar — revenda de serviços sociais</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="tela-auth">
+
+  <div class="auth-vitrine">
+    <div class="marca">Viral<span>izar</span></div>
+    <svg class="pulso-linha" viewBox="0 0 400 48" preserveAspectRatio="none">
+      <path d="M0 24 L110 24 L128 6 L148 42 L166 24 L400 24" />
+    </svg>
+    <h1>Dê pulso às contas dos seus clientes.</h1>
+    <p class="sub">Painel de revenda de seguidores, curtidas e visualizações. Você define o preço, o Viralizar cuida da entrega.</p>
+  </div>
+
+  <div class="auth-form">
+    <div class="abas">
+      <button class="aba ativa" id="aba-entrar" onclick="mostrarAba('entrar')">Entrar</button>
+      <button class="aba" id="aba-criar" onclick="mostrarAba('criar')">Criar conta</button>
+    </div>
+
+    <form id="form-entrar">
+      <div class="campo">
+        <label for="login-email">E-mail</label>
+        <input type="email" id="login-email" required>
+      </div>
+      <div class="campo">
+        <label for="login-senha">Senha</label>
+        <input type="password" id="login-senha" required>
+      </div>
+      <div class="erro-msg" id="erro-entrar"></div>
+      <button type="submit" class="btn btn-primario btn-bloco">Entrar</button>
+    </form>
+
+    <form id="form-criar" style="display:none">
+      <div class="campo">
+        <label for="criar-nome">Nome</label>
+        <input type="text" id="criar-nome" required>
+      </div>
+      <div class="campo">
+        <label for="criar-email">E-mail</label>
+        <input type="email" id="criar-email" required>
+      </div>
+      <div class="campo">
+        <label for="criar-senha">Senha</label>
+        <input type="password" id="criar-senha" minlength="6" required>
+      </div>
+      <div class="erro-msg" id="erro-criar"></div>
+      <button type="submit" class="btn btn-primario btn-bloco">Criar conta</button>
+    </form>
+  </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+</body>
+</html>

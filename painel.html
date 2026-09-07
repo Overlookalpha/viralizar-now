@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel — Viralizar</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <nav class="lateral" id="lateral">
+    <div class="marca">Viral<span>izar</span></div>
+    <a class="nav-item ativo" href="painel.html">Novo pedido</a>
+    <a class="nav-item" href="#" onclick="mostrarSecao('pedidos'); return false;">Meus pedidos</a>
+    <a class="nav-item" href="#" onclick="mostrarSecao('saldo'); return false;">Adicionar saldo</a>
+    <a class="nav-item" href="#" onclick="sair(); return false;">Sair</a>
+    <div class="saldo-caixa">
+      <div class="rotulo">Saldo disponível</div>
+      <div class="valor" id="saldo-lateral">R$ 0,00</div>
+    </div>
+  </nav>
+
+  <main class="conteudo">
+    <button class="botao-menu-movel" onclick="document.getElementById('lateral').classList.toggle('aberta')">Menu</button>
+
+    <section id="secao-pedido">
+      <div class="topo-pagina">
+        <h1>Novo pedido</h1>
+      </div>
+
+      <div class="painel-secao">
+        <div class="campo">
+          <label for="sel-servico">Serviço</label>
+          <select id="sel-servico"></select>
+        </div>
+        <div class="campo">
+          <label for="inp-link">Link do perfil ou publicação</label>
+          <input type="text" id="inp-link" placeholder="https://instagram.com/seuusuario">
+        </div>
+        <div class="campo">
+          <label for="inp-qtd">Quantidade</label>
+          <input type="number" id="inp-qtd" min="1">
+        </div>
+        <p id="detalhe-servico" style="color: var(--papel-fosco); font-size: 0.85rem;"></p>
+        <div class="erro-msg" id="erro-pedido"></div>
+        <button class="btn btn-primario" onclick="criarPedido()">Fazer pedido — <span id="preco-estimado">R$ 0,00</span></button>
+      </div>
+    </section>
+
+    <section id="secao-pedidos" style="display:none">
+      <div class="topo-pagina"><h1>Meus pedidos</h1></div>
+      <div class="painel-secao">
+        <table>
+          <thead><tr><th>Serviço</th><th>Link</th><th>Qtd.</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead>
+          <tbody id="corpo-pedidos"></tbody>
+        </table>
+        <div class="vazio" id="pedidos-vazio" style="display:none">Você ainda não fez nenhum pedido.</div>
+      </div>
+    </section>
+
+    <section id="secao-saldo" style="display:none">
+      <div class="topo-pagina"><h1>Adicionar saldo</h1></div>
+      <div class="painel-secao">
+        <p>A recarga de saldo depende do meio de pagamento que você conectar (Pix, cartão). Essa integração ainda não está plugada neste protótipo — quando você tiver um gateway escolhido (Mercado Pago, Pagar.me etc.), eu conecto aqui.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/painel.js"></script>
+</body>
+</html>

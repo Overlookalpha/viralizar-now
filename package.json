@@ -1,0 +1,16 @@
+{
+  "name": "viralizar-functions",
+  "description": "Cloud Functions do Viralizar — integração com a API da Baratos Sociais",
+  "engines": { "node": "20" },
+  "main": "index.js",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0",
+    "node-fetch": "^2.7.0"
+  }
+}

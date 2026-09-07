@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Viralizar</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <nav class="lateral" id="lateral">
+    <div class="marca">Viral<span>izar</span> <small style="font-size:0.6em; color:var(--papel-fosco)">admin</small></div>
+    <a class="nav-item ativo" href="#" onclick="mostrarSecao('visao'); return false;">Visão geral</a>
+    <a class="nav-item" href="#" onclick="mostrarSecao('servicos'); return false;">Serviços</a>
+    <a class="nav-item" href="#" onclick="mostrarSecao('pedidos'); return false;">Pedidos</a>
+    <a class="nav-item" href="#" onclick="mostrarSecao('usuarios'); return false;">Usuários</a>
+    <a class="nav-item" href="painel.html">Ver como usuário</a>
+    <a class="nav-item" href="#" onclick="sair(); return false;">Sair</a>
+    <div class="saldo-caixa">
+      <div class="rotulo">Saldo na Baratos Sociais</div>
+      <div class="valor" id="saldo-provedor">—</div>
+    </div>
+  </nav>
+
+  <main class="conteudo">
+    <button class="botao-menu-movel" onclick="document.getElementById('lateral').classList.toggle('aberta')">Menu</button>
+
+    <section id="secao-visao">
+      <div class="topo-pagina"><h1>Visão geral</h1></div>
+      <div class="grade-cartoes">
+        <div class="cartao"><div class="rotulo">Pedidos hoje</div><div class="valor" id="cartao-pedidos-hoje">0</div></div>
+        <div class="cartao"><div class="rotulo">Faturamento do mês</div><div class="valor coral" id="cartao-faturamento">R$ 0,00</div></div>
+        <div class="cartao"><div class="rotulo">Usuários cadastrados</div><div class="valor" id="cartao-usuarios">0</div></div>
+        <div class="cartao"><div class="rotulo">Serviços ativos</div><div class="valor salvia" id="cartao-servicos">0</div></div>
+      </div>
+      <div class="painel-secao">
+        <h3>Sincronizar catálogo</h3>
+        <p>Busca a lista atualizada de serviços da Baratos Sociais e atualiza os preços de custo. Serviços novos entram desativados — defina a margem antes de ativá-los.</p>
+        <button class="btn btn-secundario" onclick="sincronizarServicos()">Sincronizar agora</button>
+        <span id="msg-sincronizar" style="margin-left:0.8rem; color: var(--salvia); font-size:0.85rem;"></span>
+      </div>
+    </section>
+
+    <section id="secao-servicos" style="display:none">
+      <div class="topo-pagina"><h1>Serviços</h1></div>
+      <div class="painel-secao">
+        <table>
+          <thead><tr><th>Nome</th><th>Categoria</th><th>Custo /1000</th><th>Margem %</th><th>Venda /1000</th><th>Ativo</th></tr></thead>
+          <tbody id="corpo-servicos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="secao-pedidos" style="display:none">
+      <div class="topo-pagina"><h1>Todos os pedidos</h1></div>
+      <div class="painel-secao">
+        <table>
+          <thead><tr><th>Usuário</th><th>Serviço</th><th>Qtd.</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead>
+          <tbody id="corpo-todos-pedidos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="secao-usuarios" style="display:none">
+      <div class="topo-pagina"><h1>Usuários</h1></div>
+      <div class="painel-secao">
+        <table>
+          <thead><tr><th>Nome</th><th>E-mail</th><th>Saldo</th><th>Cadastro</th></tr></thead>
+          <tbody id="corpo-usuarios"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
