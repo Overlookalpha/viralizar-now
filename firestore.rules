@@ -1,0 +1,30 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function ehAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // Cada usuário só lê/edita o próprio documento (saldo é alterado só pelas Cloud Functions)
+    match /users/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || ehAdmin());
+      allow create: if request.auth != null && request.auth.uid == uid;
+      allow update: if ehAdmin();
+    }
+
+    // Catálogo de serviços: qualquer usuário logado lê, só admin escreve
+    match /services/{id} {
+      allow read: if request.auth != null;
+      allow write: if ehAdmin();
+    }
+
+    // Pedidos: usuário vê os seus, admin vê todos. Criação/edição só via Cloud Functions (Admin SDK)
+    match /orders/{id} {
+      allow read: if request.auth != null && (resource.data.uid == request.auth.uid || ehAdmin());
+      allow write: if false;
+    }
+  }
+}
