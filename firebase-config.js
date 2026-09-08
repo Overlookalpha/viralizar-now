@@ -1,18 +1,14 @@
-// Substitua pelos dados do SEU projeto Firebase
-// (Console Firebase > Configurações do projeto > Seus apps > Config)
+// Configuração do projeto Firebase "Viralizar"
 const firebaseConfig = {
-  apiKey: "COLE_AQUI_A_API_KEY",
-  authDomain: "COLE_AQUI.firebaseapp.com",
-  projectId: "COLE_AQUI_O_PROJECT_ID",
-  storageBucket: "COLE_AQUI.appspot.com",
-  messagingSenderId: "COLE_AQUI",
-  appId: "COLE_AQUI"
+    apiKey: "AIzaSyBfcsAVe7hFsD6HZIAwie9xT3qpd-uvt4g",
+    authDomain: "viralizar-now-d6218.firebaseapp.com",
+    projectId: "viralizar-now-d6218",
+    storageBucket: "viralizar-now-d6218.firebasestorage.app",
+    messagingSenderId: "1067165954137",
+    appId: "1:1067165954137:web:2f068ec1eb3c8c98728148"
 };
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 const functions = firebase.functions();
-
-// Se quiser testar localmente com o emulador do Firebase, descomente:
-// functions.useEmulator("localhost", 5001);
