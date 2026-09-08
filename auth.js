@@ -6,9 +6,16 @@ function mostrarAba(aba) {
   document.getElementById('form-criar').style.display = eEntrar ? 'none' : 'block';
 }
 
-// Se já estiver logado, manda direto pro painel (ou admin)
+// Evita que o redirecionamento automatico dispare antes do documento do
+// usuario ser criado no Firestore durante o cadastro (condicao de corrida:
+// o onAuthStateChanged disparava assim que a conta era criada e navegava
+// para painel.html antes do db.collection('users').doc(uid).set(...) terminar,
+// cancelando a gravacao e deixando o usuario sem documento no Firestore).
+let cadastrando = false;
+
+// Se ja estiver logado, manda direto pro painel (ou admin)
 auth.onAuthStateChanged(async (user) => {
-  if (!user) return;
+  if (!user || cadastrando) return;
   const doc = await db.collection('users').doc(user.uid).get();
   const dados = doc.data();
   window.location.href = (dados && dados.isAdmin) ? 'admin.html' : 'painel.html';
@@ -34,6 +41,7 @@ document.getElementById('form-criar').addEventListener('submit', async (e) => {
   const senha = document.getElementById('criar-senha').value;
   const erroEl = document.getElementById('erro-criar');
   erroEl.textContent = '';
+  cadastrando = true;
   try {
     const cred = await auth.createUserWithEmailAndPassword(email, senha);
     await db.collection('users').doc(cred.user.uid).set({
@@ -43,19 +51,21 @@ document.getElementById('form-criar').addEventListener('submit', async (e) => {
       isAdmin: false,
       criadoEm: firebase.firestore.FieldValue.serverTimestamp()
     });
+    window.location.href = 'painel.html';
   } catch (err) {
+    cadastrando = false;
     erroEl.textContent = traduzErro(err.code);
   }
 });
 
 function traduzErro(codigo) {
   const mapa = {
-    'auth/email-already-in-use': 'Este e-mail já está cadastrado.',
-    'auth/invalid-email': 'E-mail inválido.',
+    'auth/email-already-in-use': 'Este e-mail ja esta cadastrado.',
+    'auth/invalid-email': 'E-mail invalido.',
     'auth/weak-password': 'A senha precisa ter pelo menos 6 caracteres.',
     'auth/user-not-found': 'E-mail ou senha incorretos.',
     'auth/wrong-password': 'E-mail ou senha incorretos.',
     'auth/invalid-credential': 'E-mail ou senha incorretos.'
   };
-  return mapa[codigo] || 'Não foi possível concluir. Tente novamente.';
+  return mapa[codigo] || 'Nao foi possivel concluir. Tente novamente.';
 }
