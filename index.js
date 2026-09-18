@@ -96,6 +96,9 @@ exports.criarPedido = onCall({ secrets: [BARATOS_API_KEY] }, async (request) => 
       throw new HttpsError("not-found", "Serviço indisponível.");
     }
     const s = servicoSnap.data();
+    if (!Number.isInteger(quantidade)) {
+      throw new HttpsError("invalid-argument", "Quantidade deve ser um número inteiro.");
+    }
     if (quantidade < s.min || quantidade > s.max) {
       throw new HttpsError("invalid-argument", `Quantidade deve estar entre ${s.min} e ${s.max}.`);
     }
