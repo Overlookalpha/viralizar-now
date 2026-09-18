@@ -1,3 +1,12 @@
+// Escapa valores antes de inserir em innerHTML — nome de usuário (digitado
+// livremente no cadastro) e nome/categoria de serviço (vindos do provedor
+// externo) não são confiáveis e sem isso permitem XSS armazenado.
+function escapeHtml(valor) {
+  var texto = String(valor === null || valor === undefined ? '' : valor);
+  var mapa = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  return texto.replace(/[&<>"']/g, function (c) { return mapa[c]; });
+}
+
 auth.onAuthStateChanged(async (user) => {
   if (!user) { window.location.href = 'index.html'; return; }
   const doc = await db.collection('users').doc(user.uid).get();
@@ -56,8 +65,8 @@ function escutarServicos() {
       const s = d.data();
       const margem = s.margemPercentual != null ? s.margemPercentual : 0;
       return `<tr>
-        <td>${s.nome}</td>
-        <td>${s.categoria || '—'}</td>
+        <td>${escapeHtml(s.nome)}</td>
+        <td>${escapeHtml(s.categoria || '—')}</td>
         <td>${formatarMoeda(s.precoCusto)}</td>
         <td>
           <input type="number" value="${margem}" style="width:70px; background:var(--tinta); color:var(--papel); border:1px solid var(--linha); border-radius:4px; padding:0.3rem;"
@@ -92,8 +101,8 @@ function escutarTodosPedidos() {
       const p = d.data();
       const data = p.criadoEm ? p.criadoEm.toDate().toLocaleDateString('pt-BR') : '—';
       return `<tr>
-        <td>${p.usuarioEmail || p.uid}</td>
-        <td>${p.servicoNome || '—'}</td>
+        <td>${escapeHtml(p.usuarioEmail || p.uid)}</td>
+        <td>${escapeHtml(p.servicoNome || '—')}</td>
         <td>${p.quantidade}</td>
         <td>${formatarMoeda(p.valor)}</td>
         <td>${p.status || 'pendente'}</td>
@@ -109,8 +118,8 @@ function escutarUsuarios() {
       const u = d.data();
       const data = u.criadoEm ? u.criadoEm.toDate().toLocaleDateString('pt-BR') : '—';
       return `<tr>
-        <td>${u.nome || '—'}</td>
-        <td>${u.email}</td>
+        <td>${escapeHtml(u.nome || '—')}</td>
+        <td>${escapeHtml(u.email)}</td>
         <td>${formatarMoeda(u.saldo)}</td>
         <td>${data}</td>
       </tr>`;
