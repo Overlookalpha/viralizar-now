@@ -1,6 +1,15 @@
 let usuarioAtual = null;
 let servicosCache = [];
 
+// Escapa valores antes de inserir em innerHTML — nome/categoria de serviço
+// (vindos do provedor externo) e o link informado pelo próprio usuário não
+// são confiáveis e sem isso permitem XSS armazenado.
+function escapeHtml(valor) {
+  var texto = String(valor === null || valor === undefined ? '' : valor);
+  var mapa = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  return texto.replace(/[&<>"']/g, function (c) { return mapa[c]; });
+}
+
 auth.onAuthStateChanged(async (user) => {
   if (!user) { window.location.href = 'index.html'; return; }
   usuarioAtual = user;
@@ -20,7 +29,7 @@ async function carregarServicos() {
   servicosCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   const sel = document.getElementById('sel-servico');
   sel.innerHTML = servicosCache.map(s =>
-    `<option value="${s.id}">${s.nome} — ${s.categoria}</option>`
+    `<option value="${escapeHtml(s.id)}">${escapeHtml(s.nome)} — ${escapeHtml(s.categoria)}</option>`
   ).join('');
   atualizarDetalheServico();
   sel.addEventListener('change', atualizarDetalheServico);
@@ -55,6 +64,10 @@ async function criarPedido() {
 
   if (!s) { erroEl.textContent = 'Selecione um serviço.'; return; }
   if (!link) { erroEl.textContent = 'Informe o link.'; return; }
+  if (!Number.isInteger(quantidade)) {
+    erroEl.textContent = 'Quantidade deve ser um número inteiro.';
+    return;
+  }
   if (!quantidade || quantidade < s.min || quantidade > s.max) {
     erroEl.textContent = `Quantidade deve estar entre ${s.min} e ${s.max}.`;
     return;
@@ -88,8 +101,8 @@ function escutarPedidos() {
         const p = d.data();
         const data = p.criadoEm ? p.criadoEm.toDate().toLocaleDateString('pt-BR') : '—';
         return `<tr>
-          <td>${p.servicoNome || '—'}</td>
-          <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.link}</td>
+          <td>${escapeHtml(p.servicoNome || '—')}</td>
+          <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(p.link)}</td>
           <td>${p.quantidade}</td>
           <td>${formatarMoeda(p.valor)}</td>
           <td>${rotuloStatus(p.status)}</td>
@@ -110,7 +123,7 @@ function rotuloStatus(status) {
     erro: ['status-erro', 'Erro']
   };
   const [classe, texto] = mapa[status] || ['status-pendente', status || 'Pendente'];
-  return `<span class="rotulo-status ${classe}">${texto}</span>`;
+  return `<span class="rotulo-status ${classe}">${escapeHtml(texto)}</span>`;
 }
 
 function mostrarSecao(nome) {
