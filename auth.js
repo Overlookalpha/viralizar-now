@@ -16,9 +16,21 @@ let cadastrando = false;
 // Se ja estiver logado, manda direto pro painel (ou admin)
 auth.onAuthStateChanged(async (user) => {
   if (!user || cadastrando) return;
-  const doc = await db.collection('users').doc(user.uid).get();
-  const dados = doc.data();
-  window.location.href = (dados && dados.isAdmin) ? 'admin.html' : 'painel.html';
+  try {
+    const doc = await db.collection('users').doc(user.uid).get();
+    const dados = doc.data();
+    window.location.href = (dados && dados.isAdmin) ? 'admin.html' : 'painel.html';
+  } catch (err) {
+    // Antes, se essa consulta falhasse (ex: "client is offline" por causa de
+    // proxy/VPN/extensao bloqueando a conexao do Firestore), o erro nao era
+    // tratado: o login parecia "nao funcionar" sem nenhuma mensagem, mesmo
+    // com e-mail/senha corretos e a autenticacao ja concluida com sucesso.
+    console.error('Erro ao carregar dados do usuario apos login:', err);
+    const erroEl = document.getElementById('erro-entrar');
+    if (erroEl) {
+      erroEl.textContent = 'Login feito, mas nao foi possivel conectar ao servidor. Verifique sua internet e tente novamente.';
+    }
+  }
 });
 
 document.getElementById('form-entrar').addEventListener('submit', async (e) => {
