@@ -40,8 +40,6 @@ auth.onAuthStateChanged(async (user) => {
     await carregarServicos();
 
     escutarPedidos();
-
-    verificarRetornoPagamento();
 });
 
 
@@ -83,7 +81,9 @@ async function carregarServicos() {
 
     sel.innerHTML = servicosCache
         .map(s =>
-            `<option value="${escapeHtml(s.id)}">${escapeHtml(s.nome)} — ${escapeHtml(s.categoria)}</option>`
+            '<option value="' + escapeHtml(s.id) + '">' +
+            escapeHtml(s.nome) + ' — ' + escapeHtml(s.categoria) +
+            '</option>'
         )
         .join('');
 
@@ -135,7 +135,8 @@ function atualizarDetalheServico() {
     document.getElementById(
         'detalhe-servico'
     ).textContent =
-        `Mínimo ${s.min} · Máximo ${s.max} · Preço de venda: ${formatarMoeda(s.precoVenda)} por 1000`;
+        'Mínimo ' + s.min + ' · Máximo ' + s.max +
+        ' · Preço de venda: ' + formatarMoeda(s.precoVenda) + ' por 1000';
 
     const qtd =
         Number(qtdInput.value || 0);
@@ -206,7 +207,7 @@ async function criarPedido() {
         quantidade > s.max
     ) {
         erroEl.textContent =
-            `Quantidade deve estar entre ${s.min} e ${s.max}.`;
+            'Quantidade deve estar entre ' + s.min + ' e ' + s.max + '.';
 
         return;
     }
@@ -255,18 +256,21 @@ async function criarPedido() {
 
 
 // ==============================
-// RECARGA DE SALDO (MERCADO PAGO)
+// RECARGA DE SALDO (PIX)
 // ==============================
 
-// Cria a preferência de pagamento no backend e redireciona o cliente para
-// a página de checkout do Mercado Pago (Pix, cartão ou boleto). Nenhum
-// dado de pagamento passa por este site.
-async function iniciarRecarga() {
+// Cancela a inscrição ativa no status da recarga atual (se houver).
+let cancelarEscutaRecarga = null;
+
+// Gera um pagamento Pix via backend e exibe o QR code diretamente nesta
+// página, sem redirecionar o cliente. O saldo é creditado automaticamente
+// assim que o webhook do Mercado Pago confirmar o pagamento — o status é
+// acompanhado em tempo real por escutarRecarga().
+async function gerarPagamentoPix() {
     const erroEl = document.getElementById('erro-recarga');
     const msgEl = document.getElementById('msg-recarga');
 
     erroEl.textContent = '';
-    msgEl.textContent = '';
 
     const valor = Number(
         document.getElementById('inp-valor-recarga').value
@@ -277,94 +281,140 @@ async function iniciarRecarga() {
         return;
     }
 
-    msgEl.textContent = 'Preparando pagamento…';
+    const botao = document.querySelector('#recarga-formulario button');
+
+    if (botao) {
+        botao.disabled = true;
+        botao.textContent = 'Gerando QR code…';
+    }
 
     try {
-        const criarPreferencia = functions.httpsCallable(
-            'criarPreferenciaPagamento'
-        );
+        const criarPix = functions.httpsCallable('criarPagamentoPix');
 
-        const resp = await criarPreferencia({ valor });
+        const resp = await criarPix({ valor });
 
-        window.location.href = resp.data.initPoint;
+        const dados = resp.data;
+
+        document.getElementById('pix-qrcode-img').src =
+            'data:image/png;base64,' + dados.qrCodeBase64;
+
+        document.getElementById('pix-copia-cola').value =
+            dados.qrCode;
+
+        if (msgEl) {
+            msgEl.textContent = 'Aguardando confirmação do pagamento…';
+        }
+
+        document.getElementById('recarga-formulario').style.display = 'none';
+        document.getElementById('recarga-pix').style.display = 'block';
+
+        escutarRecarga(dados.recargaId);
 
     } catch (err) {
-        console.error('Erro ao iniciar recarga:', err);
-        msgEl.textContent = '';
+        console.error('Erro ao gerar pagamento Pix:', err);
         erroEl.textContent =
-            err.message || 'Não foi possível iniciar o pagamento.';
-    }
-}
-
-// Ao voltar do checkout do Mercado Pago, a URL traz
-// ?pagamento=sucesso|pendente|falha (definido em back_urls no backend).
-// Mostra a mensagem correspondente e, se aprovado, aguarda o webhook
-// creditar o saldo antes de atualizar a tela.
-function verificarRetornoPagamento() {
-    const params = new URLSearchParams(window.location.search);
-    const status = params.get('pagamento');
-
-    if (!status) return;
-
-    mostrarSecao('saldo');
-
-    const msgEl = document.getElementById('msg-recarga');
-
-    if (status === 'sucesso') {
-        msgEl.textContent = 'Pagamento aprovado! Atualizando seu saldo…';
-        aguardarAtualizacaoSaldo();
-    } else if (status === 'pendente') {
-        msgEl.textContent =
-            'Pagamento em análise. Assim que for aprovado, o saldo é creditado automaticamente.';
-    } else if (status === 'falha') {
-        msgEl.textContent =
-            'O pagamento não foi concluído. Você pode tentar novamente.';
-    }
-
-    // Remove o parâmetro da URL sem recarregar a página.
-    window.history.replaceState({}, document.title, window.location.pathname);
-}
-
-// O webhook do Mercado Pago credita o saldo de forma assíncrona (pode
-// levar alguns segundos). Observa o saldo do usuário por até ~30s,
-// mostrando a confirmação assim que ele aumentar.
-function aguardarAtualizacaoSaldo() {
-    const saldoInicial = extrairValorMoeda(
-        document.getElementById('saldo-lateral').textContent
-    );
-
-    const msgEl = document.getElementById('msg-recarga');
-
-    let tentativas = 0;
-
-    const intervalo = setInterval(async () => {
-        tentativas++;
-
-        await carregarSaldo();
-
-        const saldoAtual = extrairValorMoeda(
-            document.getElementById('saldo-lateral').textContent
-        );
-
-        if (saldoAtual > saldoInicial) {
-            clearInterval(intervalo);
-            msgEl.textContent = 'Saldo atualizado com sucesso!';
-        } else if (tentativas >= 15) {
-            clearInterval(intervalo);
-            msgEl.textContent =
-                'O pagamento está sendo processado. Se o saldo não aparecer em alguns minutos, entre em contato com o suporte.';
+            err.message || 'Não foi possível gerar o QR code. Tente novamente.';
+    } finally {
+        if (botao) {
+            botao.disabled = false;
+            botao.textContent = 'Gerar QR Code Pix';
         }
-    }, 2000);
+    }
 }
 
-function extrairValorMoeda(texto) {
-    return (
-        Number(
-            String(texto)
-                .replace(/[^\d,-]/g, '')
-                .replace(',', '.')
-        ) || 0
-    );
+// Observa em tempo real o documento da recarga no Firestore: assim que o
+// webhook do Mercado Pago confirmar o pagamento e creditar o saldo, o
+// campo "status" muda para "creditado" e a tela é atualizada sozinha,
+// sem precisar recarregar a página.
+function escutarRecarga(recargaId) {
+    if (cancelarEscutaRecarga) {
+        cancelarEscutaRecarga();
+        cancelarEscutaRecarga = null;
+    }
+
+    const msgEl = document.getElementById('msg-recarga');
+
+    cancelarEscutaRecarga = db
+        .collection('recargas')
+        .doc(recargaId)
+        .onSnapshot(
+            async snap => {
+                const dados = snap.data();
+
+                if (!dados) return;
+
+                if (dados.status === 'creditado') {
+                    if (msgEl) {
+                        msgEl.textContent =
+                            'Pagamento confirmado! Saldo atualizado.';
+                    }
+
+                    await carregarSaldo();
+
+                } else if (dados.status === 'erro') {
+                    if (msgEl) {
+                        msgEl.textContent =
+                            'Houve um erro com este pagamento. Gere um novo QR code.';
+                    }
+                }
+            },
+            error => {
+                console.error('Erro ao acompanhar recarga:', error);
+            }
+        );
+}
+
+// Copia o código Pix (copia e cola) para a área de transferência do usuário.
+function copiarCodigoPix() {
+    const campo = document.getElementById('pix-copia-cola');
+    const msgEl = document.getElementById('msg-recarga');
+
+    campo.select();
+
+    const mostrarCopiado = function () {
+        if (!msgEl) return;
+
+        const mensagemAnterior = msgEl.textContent;
+        msgEl.textContent = 'Código copiado!';
+
+        setTimeout(function () {
+            msgEl.textContent = mensagemAnterior;
+        }, 2000);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(campo.value)
+            .then(mostrarCopiado)
+            .catch(function () {
+                document.execCommand('copy');
+                mostrarCopiado();
+            });
+    } else {
+        document.execCommand('copy');
+        mostrarCopiado();
+    }
+}
+
+// Cancela a recarga em andamento e volta ao formulário, permitindo gerar
+// um novo QR code (por exemplo, se o anterior expirou).
+function cancelarRecargaPix() {
+    if (cancelarEscutaRecarga) {
+        cancelarEscutaRecarga();
+        cancelarEscutaRecarga = null;
+    }
+
+    document.getElementById('pix-qrcode-img').src = '';
+    document.getElementById('pix-copia-cola').value = '';
+    document.getElementById('inp-valor-recarga').value = '';
+
+    const msgEl = document.getElementById('msg-recarga');
+
+    if (msgEl) {
+        msgEl.textContent = '';
+    }
+
+    document.getElementById('recarga-pix').style.display = 'none';
+    document.getElementById('recarga-formulario').style.display = 'block';
 }
 
 
@@ -433,52 +483,35 @@ function escutarPedidos() {
                                     : '—';
 
 
-                            return `
-                                <tr>
+                            return (
+                                '<tr>' +
 
-                                    <td>
-                                        ${escapeHtml(
-                                            p.servicoNome || '—'
-                                        )}
-                                    </td>
+                                    '<td>' +
+                                        escapeHtml(p.servicoNome || '—') +
+                                    '</td>' +
 
-                                    <td
-                                        style="
-                                            max-width:220px;
-                                            overflow:hidden;
-                                            text-overflow:ellipsis;
-                                            white-space:nowrap;
-                                        "
-                                    >
-                                        ${escapeHtml(
-                                            p.link || ''
-                                        )}
-                                    </td>
+                                    '<td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' +
+                                        escapeHtml(p.link || '') +
+                                    '</td>' +
 
-                                    <td>
-                                        ${escapeHtml(
-                                            p.quantidade ?? '—'
-                                        )}
-                                    </td>
+                                    '<td>' +
+                                        escapeHtml(p.quantidade ?? '—') +
+                                    '</td>' +
 
-                                    <td>
-                                        ${formatarMoeda(
-                                            p.valor
-                                        )}
-                                    </td>
+                                    '<td>' +
+                                        formatarMoeda(p.valor) +
+                                    '</td>' +
 
-                                    <td>
-                                        ${rotuloStatus(
-                                            p.status
-                                        )}
-                                    </td>
+                                    '<td>' +
+                                        rotuloStatus(p.status) +
+                                    '</td>' +
 
-                                    <td>
-                                        ${escapeHtml(data)}
-                                    </td>
+                                    '<td>' +
+                                        escapeHtml(data) +
+                                    '</td>' +
 
-                                </tr>
-                            `;
+                                '</tr>'
+                            );
                         })
                         .join('');
             },
@@ -546,11 +579,11 @@ function rotuloStatus(status) {
         ];
 
 
-    return `
-        <span class="rotulo-status ${classe}">
-            ${escapeHtml(texto)}
-        </span>
-    `;
+    return (
+        '<span class="rotulo-status ' + classe + '">' +
+            escapeHtml(texto) +
+        '</span>'
+    );
 }
 
 
