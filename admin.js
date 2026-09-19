@@ -57,6 +57,51 @@ async function sincronizarServicos() {
   }
 }
 
+// Aplica ativo=valor em todos os serviços cadastrados, em lotes (limite do
+// Firestore é 500 operações por batch, usamos 450 por segurança).
+async function definirAtivoEmTodos(valor) {
+  const snap = await db.collection('services').get();
+  const TAMANHO_LOTE = 450;
+  let lote = db.batch();
+  let contador = 0;
+  for (const doc of snap.docs) {
+    lote.update(doc.ref, { ativo: valor });
+    contador++;
+    if (contador === TAMANHO_LOTE) {
+      await lote.commit();
+      lote = db.batch();
+      contador = 0;
+    }
+  }
+  if (contador > 0) await lote.commit();
+  return snap.size;
+}
+
+async function ativarTodos() {
+  const total = await db.collection('services').get().then(s => s.size);
+  if (!confirm(`Isso vai ativar todos os ${total} serviços de uma vez, deixando todos disponíveis para os clientes imediatamente, nas margens já definidas. Continuar?`)) return;
+  const msg = document.getElementById('msg-ativar-todos');
+  msg.textContent = 'Ativando…';
+  try {
+    const quantidade = await definirAtivoEmTodos(true);
+    msg.textContent = `${quantidade} serviços ativados.`;
+  } catch (e) {
+    msg.textContent = 'Erro ao ativar todos: ' + e.message;
+  }
+}
+
+async function desativarTodos() {
+  if (!confirm('Isso vai desativar todos os serviços, removendo todos da lista de pedidos dos clientes. Continuar?')) return;
+  const msg = document.getElementById('msg-ativar-todos');
+  msg.textContent = 'Desativando…';
+  try {
+    const quantidade = await definirAtivoEmTodos(false);
+    msg.textContent = `${quantidade} serviços desativados.`;
+  } catch (e) {
+    msg.textContent = 'Erro ao desativar todos: ' + e.message;
+  }
+}
+
 function escutarServicos() {
   db.collection('services').onSnapshot(snap => {
     document.getElementById('cartao-servicos').textContent =
