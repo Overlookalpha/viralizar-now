@@ -33,7 +33,7 @@ async function chamarBaratos(apiKey, params) {
     body: corpo
   });
   if (!resp.ok) {
-    throw new Error(`Baratos Sociais respondeu ${resp.status}`);
+    throw new Error("Baratos Sociais respondeu " + resp.status);
   }
   return resp.json();
 }
@@ -133,7 +133,7 @@ exports.criarPedido = onCall({ secrets: [BARATOS_API_KEY], timeoutSeconds: 120 }
       throw new HttpsError("invalid-argument", "Quantidade deve ser um número inteiro.");
     }
     if (quantidade < s.min || quantidade > s.max) {
-      throw new HttpsError("invalid-argument", `Quantidade deve estar entre ${s.min} e ${s.max}.`);
+      throw new HttpsError("invalid-argument", "Quantidade deve estar entre " + s.min + " e " + s.max + ".");
     }
     const valorPedido = Number(((quantidade / 1000) * s.precoVenda).toFixed(2));
     const saldoAtual = usuarioSnap.data().saldo || 0;
@@ -229,7 +229,7 @@ exports.criarPreferenciaPagamento = onCall({ secrets: [MP_ACCESS_TOKEN], timeout
 
   const valor = Number(request.data && request.data.valor);
   if (!valor || valor < RECARGA_MINIMA) {
-    throw new HttpsError("invalid-argument", `Informe um valor de pelo menos R$ ${RECARGA_MINIMA.toFixed(2)}.`);
+    throw new HttpsError("invalid-argument", "Informe um valor de pelo menos R$ " + RECARGA_MINIMA.toFixed(2) + ".");
   }
 
   const valorArredondado = Number(valor.toFixed(2));
@@ -252,19 +252,19 @@ exports.criarPreferenciaPagamento = onCall({ secrets: [MP_ACCESS_TOKEN], timeout
     }],
     external_reference: recargaRef.id,
     back_urls: {
-      success: `${SITE_URL}/painel.html?pagamento=sucesso`,
-      failure: `${SITE_URL}/painel.html?pagamento=falha`,
-      pending: `${SITE_URL}/painel.html?pagamento=pendente`
+      success: SITE_URL + "/painel.html?pagamento=sucesso",
+      failure: SITE_URL + "/painel.html?pagamento=falha",
+      pending: SITE_URL + "/painel.html?pagamento=pendente"
     },
     auto_return: "approved",
-    notification_url: `${FUNCOES_URL}/webhookMercadoPago`
+    notification_url: FUNCOES_URL + "/webhookMercadoPago"
   };
 
   const resp = await fetch("https://api.mercadopago.com/checkout/preferences", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${MP_ACCESS_TOKEN.value()}`
+      Authorization: "Bearer " + MP_ACCESS_TOKEN.value()
     },
     body: JSON.stringify(corpo)
   });
@@ -296,8 +296,8 @@ exports.webhookMercadoPago = onRequest({ secrets: [MP_ACCESS_TOKEN], timeoutSeco
 
     // Nunca confia no status vindo da notificação: confirma direto na API do
     // Mercado Pago, usando nossa própria credencial, antes de creditar qualquer saldo.
-    const respPagamento = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-      headers: { Authorization: `Bearer ${MP_ACCESS_TOKEN.value()}` }
+    const respPagamento = await fetch("https://api.mercadopago.com/v1/payments/" + paymentId, {
+      headers: { Authorization: "Bearer " + MP_ACCESS_TOKEN.value() }
     });
 
     if (!respPagamento.ok) {
