@@ -282,6 +282,80 @@ exports.criarPreferenciaPagamento = onCall({ secrets: [MP_ACCESS_TOKEN], timeout
   return { initPoint: preferencia.init_point };
 });
 
+// ---------- Cria um pagamento Pix direto: QR code exibido no próprio site ----------
+exports.criarPagamentoPix = onCall({ secrets: [MP_ACCESS_TOKEN], timeoutSeconds: 60 }, async (request) => {
+  const uid = request.auth && request.auth.uid;
+  if (!uid) throw new HttpsError("unauthenticated", "Faça login para continuar.");
+
+  const valor = Number(request.data && request.data.valor);
+  if (!valor || valor < RECARGA_MINIMA) {
+    throw new HttpsError("invalid-argument", "Informe um valor de pelo menos R$ " + RECARGA_MINIMA.toFixed(2) + ".");
+  }
+
+  const usuarioSnap = await db.collection("users").doc(uid).get();
+  const email = (usuarioSnap.exists && usuarioSnap.data().email) ||
+    (request.auth.token && request.auth.token.email);
+  if (!email) {
+    throw new HttpsError("failed-precondition", "Não foi possível identificar o e-mail da conta.");
+  }
+
+  const valorArredondado = Number(valor.toFixed(2));
+
+  // Cria o registro da recarga como "pendente" antes de chamar o Mercado Pago,
+  // para o webhook conseguir localizá-lo pelo external_reference.
+  const recargaRef = await db.collection("recargas").add({
+    uid,
+    valor: valorArredondado,
+    status: "pendente",
+    metodo: "pix",
+    criadoEm: admin.firestore.FieldValue.serverTimestamp()
+  });
+
+  const corpo = {
+    transaction_amount: valorArredondado,
+    description: "Recarga de saldo - Viralizar",
+    payment_method_id: "pix",
+    payer: { email: email },
+    external_reference: recargaRef.id,
+    notification_url: FUNCOES_URL + "/webhookMercadoPago"
+  };
+
+  const resp = await fetch("https://api.mercadopago.com/v1/payments", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + MP_ACCESS_TOKEN.value(),
+      "X-Idempotency-Key": recargaRef.id
+    },
+    body: JSON.stringify(corpo)
+  });
+
+  if (!resp.ok) {
+    const detalhe = await resp.text();
+    console.error("Mercado Pago respondeu erro ao criar pagamento Pix:", resp.status, detalhe);
+    await recargaRef.update({ status: "erro" });
+    throw new HttpsError("internal", "Não foi possível gerar o Pix. Tente novamente.");
+  }
+
+  const pagamento = await resp.json();
+  const dadosPix = pagamento.point_of_interaction && pagamento.point_of_interaction.transaction_data;
+
+  if (!dadosPix || !dadosPix.qr_code) {
+    console.error("Mercado Pago não retornou QR code Pix:", JSON.stringify(pagamento));
+    await recargaRef.update({ status: "erro" });
+    throw new HttpsError("internal", "Não foi possível gerar o QR code. Tente novamente.");
+  }
+
+  await recargaRef.update({ mercadopagoPaymentId: String(pagamento.id) });
+
+  return {
+    recargaId: recargaRef.id,
+    qrCode: dadosPix.qr_code,
+    qrCodeBase64: dadosPix.qr_code_base64,
+    expiraEm: pagamento.date_of_expiration || null
+  };
+});
+
 // ---------- Webhook do Mercado Pago: confirma pagamento e credita o saldo ----------
 exports.webhookMercadoPago = onRequest({ secrets: [MP_ACCESS_TOKEN], timeoutSeconds: 60 }, async (req, res) => {
   try {
