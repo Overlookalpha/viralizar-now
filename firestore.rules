@@ -26,5 +26,12 @@ service cloud.firestore {
       allow read: if request.auth != null && (resource.data.uid == request.auth.uid || ehAdmin());
       allow write: if false;
     }
+
+    // Recargas de saldo: usuário vê as suas (usado para acompanhar o status do
+    // pagamento Pix em tempo real), admin vê todas. Criação/edição só via Cloud Functions
+    match /recargas/{id} {
+      allow read: if request.auth != null && (resource.data.uid == request.auth.uid || ehAdmin());
+      allow write: if false;
+    }
   }
 }
