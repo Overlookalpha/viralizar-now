@@ -15,6 +15,8 @@
   O cache não guarda páginas da conta nem respostas do Firebase ou de pagamentos.
 - A vitrine do login é ocultada em telas pequenas. As tabelas extensas rolam
   horizontalmente dentro de sua seção, sem alargar a página inteira.
+- Removida a segunda cópia completa da página administrativa que estava
+  concatenada no mesmo arquivo e carregava o Firebase duas vezes.
 
 ### Verificação
 
