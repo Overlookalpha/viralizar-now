@@ -392,6 +392,14 @@ th { color: var(--papel-fosco); font-weight: 500; font-size: 0.78rem; }
   .app-shell { grid-template-columns: minmax(0, 1fr); }
   .lateral { overflow-y: auto; max-height: 100svh; }
 }
+.menu-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 15;
+}
+.menu-backdrop.visivel { display: block; }
 @media (max-width: 400px) {
   .conteudo { padding: 1rem 0.8rem 5rem; }
   .painel-secao { padding: 1rem; }
