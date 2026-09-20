@@ -145,14 +145,32 @@ function escutarTodosPedidos() {
     corpo.innerHTML = snap.docs.map(d => {
       const p = d.data();
       const data = p.criadoEm ? p.criadoEm.toDate().toLocaleDateString('pt-BR') : '—';
-      return `<tr>
-        <td>${escapeHtml(p.usuarioEmail || p.uid)}</td>
-        <td>${escapeHtml(p.servicoNome || '—')}</td>
-        <td>${p.quantidade}</td>
-        <td>${formatarMoeda(p.valor)}</td>
-        <td>${p.status || 'pendente'}</td>
-        <td>${data}</td>
-      </tr>`;
+
+      // Quando o pedido falha no envio ao provedor, o motivo real fica
+      // salvo em "erroMensagem" mas antes não aparecia em lugar nenhum
+      // da interface — o admin só via "erro" sem saber o porquê. Mostra
+      // o motivo abaixo do status (com title para o texto completo).
+      var statusCelula = escapeHtml(p.status || 'pendente');
+      if (p.status === 'erro' && p.erroMensagem) {
+        statusCelula =
+          statusCelula +
+          '<br><span style="color: var(--erro); font-size: 0.78rem;" title="' +
+          escapeHtml(p.erroMensagem) +
+          '">' +
+          escapeHtml(p.erroMensagem) +
+          '</span>';
+      }
+
+      return (
+        '<tr>' +
+        '<td>' + escapeHtml(p.usuarioEmail || p.uid) + '</td>' +
+        '<td>' + escapeHtml(p.servicoNome || '—') + '</td>' +
+        '<td>' + p.quantidade + '</td>' +
+        '<td>' + formatarMoeda(p.valor) + '</td>' +
+        '<td>' + statusCelula + '</td>' +
+        '<td>' + escapeHtml(data) + '</td>' +
+        '</tr>'
+      );
     }).join('');
   });
 }
