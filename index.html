@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Viralizar — revenda de serviços sociais</title>
 <link rel="stylesheet" href="style.css">
+<meta name="theme-color" content="#181521">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Viralizar">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script src="pwa.js" defer></script>
 </head>
 <body>
 
@@ -28,32 +36,60 @@
     <form id="form-entrar">
       <div class="campo">
         <label for="login-email">E-mail</label>
-        <input type="email" id="login-email" required>
+        <input type="email" id="login-email" name="login-email" autocomplete="username" required>
       </div>
       <div class="campo">
         <label for="login-senha">Senha</label>
-        <input type="password" id="login-senha" required>
+        <div class="senha-campo">
+          <input type="password" id="login-senha" name="login-senha" autocomplete="current-password" required>
+          <button type="button" class="senha-visibilidade" data-password-target="login-senha" aria-controls="login-senha" aria-label="Mostrar senha" aria-pressed="false" title="Mostrar senha">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path data-eye-slash hidden d="m3 3 18 18"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="erro-msg" id="erro-entrar"></div>
+      <button type="button" class="link-recuperar" id="abrir-recuperacao">Esqueci minha senha</button>
+      <div class="erro-msg" id="erro-entrar" role="alert"></div>
       <button type="submit" class="btn btn-primario btn-bloco">Entrar</button>
     </form>
 
     <form id="form-criar" style="display:none">
       <div class="campo">
         <label for="criar-nome">Nome</label>
-        <input type="text" id="criar-nome" required>
+        <input type="text" id="criar-nome" name="criar-nome" autocomplete="name" required>
       </div>
       <div class="campo">
         <label for="criar-email">E-mail</label>
-        <input type="email" id="criar-email" required>
+        <input type="email" id="criar-email" name="criar-email" autocomplete="email" required>
       </div>
       <div class="campo">
         <label for="criar-senha">Senha</label>
-        <input type="password" id="criar-senha" minlength="6" required>
+        <div class="senha-campo">
+          <input type="password" id="criar-senha" name="criar-senha" autocomplete="new-password" minlength="6" required>
+          <button type="button" class="senha-visibilidade" data-password-target="criar-senha" aria-controls="criar-senha" aria-label="Mostrar senha" aria-pressed="false" title="Mostrar senha">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path data-eye-slash hidden d="m3 3 18 18"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="erro-msg" id="erro-criar"></div>
+      <div class="erro-msg" id="erro-criar" role="alert"></div>
       <button type="submit" class="btn btn-primario btn-bloco">Criar conta</button>
     </form>
+
+    <form id="form-recuperar" style="display:none" aria-labelledby="titulo-recuperar">
+      <h2 id="titulo-recuperar">Recuperar senha</h2>
+      <p class="texto-ajuda">Informe o e-mail da sua conta para receber o link de redefinição.</p>
+      <div class="campo">
+        <label for="recuperar-email">E-mail da conta</label>
+        <input type="email" id="recuperar-email" name="email" autocomplete="email" required>
+      </div>
+      <p id="msg-recuperar" class="mensagem-recuperar" role="status" aria-live="polite"></p>
+      <button type="submit" class="btn btn-primario btn-bloco" id="enviar-recuperacao">Enviar link de recuperação</button>
+      <button type="button" class="link-recuperar" id="voltar-login">← Voltar para entrar</button>
+    </form>
+
+    <div class="instalar-login">
+      <button type="button" class="btn btn-secundario btn-bloco" data-install-app>Baixar app</button>
+      <p class="texto-ajuda">Tenha o Viralizar na tela inicial do seu celular.</p>
+    </div>
   </div>
 
 </div>
@@ -70,3 +106,4 @@
 <script src="auth.js"></script>
 </body>
 </html>
+

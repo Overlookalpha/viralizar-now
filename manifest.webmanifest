@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "Viralizar",
+  "short_name": "Viralizar",
+  "description": "Acesse sua conta, acompanhe pedidos e consulte seu saldo no Viralizar.",
+  "lang": "pt-BR",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#181521",
+  "theme_color": "#181521",
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

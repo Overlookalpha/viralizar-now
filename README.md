@@ -1,5 +1,38 @@
 # Viralizar
 
+## Login e aplicativo no celular
+
+- “Esqueci minha senha” envia o link de redefinição pelo Firebase Authentication,
+  no idioma português. A mensagem não revela se um e-mail tem cadastro.
+- O botão de olho mostra/oculta a senha no login e no cadastro, sem enviar o formulário.
+- “Baixar app” oferece a instalação PWA quando o navegador disponibiliza o convite.
+  No iPhone ou sem convite, mostra instruções para adicionar à tela inicial.
+  O usuário precisa confirmar a instalação; o site não pode criar um atalho sozinho.
+- Manifesto, ícones e service worker usam caminhos relativos, compatíveis com
+  `https://overlookalpha.github.io/viralizar-now/` e hospedagem na raiz de um domínio.
+- É necessário HTTPS (ou localhost para desenvolvimento). O app exige internet
+  para login, pedidos, saldo e pagamentos. Sem conexão, exibe uma página explicativa.
+  O cache não guarda páginas da conta nem respostas do Firebase ou de pagamentos.
+- A vitrine do login é ocultada em telas pequenas. As tabelas extensas rolam
+  horizontalmente dentro de sua seção, sem alargar a página inteira.
+
+### Verificação
+
+Execute `npm install`, `npx playwright install chromium` e `npm test` para testar
+login, recuperação de senha, instalação, layout em 320–1440 px e página offline.
+Os testes usam um Firebase simulado: não criam contas, não enviam e-mails e não
+acionam pagamentos reais. Também há uma verificação automática em pull requests.
+Opcionalmente, defina `BROWSER_PATH` para usar um Chromium já instalado.
+
+Depois de publicar, confira o recebimento do e-mail em uma conta de teste sua e
+a instalação em Android/iPhone reais. O Firebase já deve ter e-mail/senha habilitado;
+o link usa a tela padrão de redefinição hospedada pelo Firebase.
+
+Observação de hospedagem: os arquivos web deste repositório estão na raiz.
+O `firebase.json` existente aponta para `public/`; isso deve ser alinhado antes
+de uma publicação pelo Firebase Hosting. Essa configuração não interfere no
+GitHub Pages e não foi alterada nesta atualização.
+
 Painel de revenda de serviços sociais (seguidores, curtidas, visualizações), integrado
 com a API da Baratos Sociais e construído sobre Firebase.
 

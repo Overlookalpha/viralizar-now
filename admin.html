@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Viralizar</title>
 <link rel="stylesheet" href="style.css">
+<meta name="theme-color" content="#181521">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Viralizar">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script src="pwa.js" defer></script>
 </head>
 <body>
 
@@ -17,6 +25,7 @@
     <a class="nav-item" href="#" onclick="mostrarSecao('usuarios'); return false;">Usuários</a>
     <a class="nav-item" href="painel.html">Ver como usuário</a>
     <a class="nav-item" href="#" onclick="sair(); return false;">Sair</a>
+    <button type="button" class="btn btn-secundario instalar-lateral" data-install-app>Baixar app</button>
     <div class="saldo-caixa">
       <div class="rotulo">Saldo na Baratos Sociais</div>
       <div class="valor" id="saldo-provedor">—</div>
@@ -50,30 +59,36 @@
           <button class="btn btn-secundario" onclick="desativarTodos()">Desativar todos</button>
           <span id="msg-ativar-todos" style="color: var(--salvia); font-size:0.85rem;"></span>
         </div>
+        <div class="tabela-rolagem" role="region" aria-label="Tabela: deslize para ver todas as colunas" tabindex="0">
         <table>
           <thead><tr><th>Nome</th><th>Categoria</th><th>Custo /1000</th><th>Margem %</th><th>Venda /1000</th><th>Ativo</th></tr></thead>
           <tbody id="corpo-servicos"></tbody>
         </table>
+        </div>
       </div>
     </section>
 
     <section id="secao-pedidos" style="display:none">
       <div class="topo-pagina"><h1>Todos os pedidos</h1></div>
       <div class="painel-secao">
+        <div class="tabela-rolagem" role="region" aria-label="Tabela: deslize para ver todas as colunas" tabindex="0">
         <table>
           <thead><tr><th>Usuário</th><th>Serviço</th><th>Qtd.</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead>
           <tbody id="corpo-todos-pedidos"></tbody>
         </table>
+        </div>
       </div>
     </section>
 
     <section id="secao-usuarios" style="display:none">
       <div class="topo-pagina"><h1>Usuários</h1></div>
       <div class="painel-secao">
+        <div class="tabela-rolagem" role="region" aria-label="Tabela: deslize para ver todas as colunas" tabindex="0">
         <table>
           <thead><tr><th>Nome</th><th>E-mail</th><th>Saldo</th><th>Cadastro</th></tr></thead>
           <tbody id="corpo-usuarios"></tbody>
         </table>
+        </div>
       </div>
     </section>
   </main>
@@ -94,6 +109,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Viralizar</title>
 <link rel="stylesheet" href="style.css">
+<meta name="theme-color" content="#181521">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Viralizar">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script src="pwa.js" defer></script>
 </head>
 <body>
 
@@ -134,30 +157,36 @@
     <section id="secao-servicos" style="display:none">
       <div class="topo-pagina"><h1>Serviços</h1></div>
       <div class="painel-secao">
+        <div class="tabela-rolagem" role="region" aria-label="Tabela: deslize para ver todas as colunas" tabindex="0">
         <table>
           <thead><tr><th>Nome</th><th>Categoria</th><th>Custo /1000</th><th>Margem %</th><th>Venda /1000</th><th>Ativo</th></tr></thead>
           <tbody id="corpo-servicos"></tbody>
         </table>
+        </div>
       </div>
     </section>
 
     <section id="secao-pedidos" style="display:none">
       <div class="topo-pagina"><h1>Todos os pedidos</h1></div>
       <div class="painel-secao">
+        <div class="tabela-rolagem" role="region" aria-label="Tabela: deslize para ver todas as colunas" tabindex="0">
         <table>
           <thead><tr><th>Usuário</th><th>Serviço</th><th>Qtd.</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead>
           <tbody id="corpo-todos-pedidos"></tbody>
         </table>
+        </div>
       </div>
     </section>
 
     <section id="secao-usuarios" style="display:none">
       <div class="topo-pagina"><h1>Usuários</h1></div>
       <div class="painel-secao">
+        <div class="tabela-rolagem" role="region" aria-label="Tabela: deslize para ver todas as colunas" tabindex="0">
         <table>
           <thead><tr><th>Nome</th><th>E-mail</th><th>Saldo</th><th>Cadastro</th></tr></thead>
           <tbody id="corpo-usuarios"></tbody>
         </table>
+        </div>
       </div>
     </section>
   </main>
@@ -171,3 +200,4 @@
 <script src="admin.js"></script>
 </body>
 </html>
+

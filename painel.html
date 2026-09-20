@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel — Viralizar</title>
 <link rel="stylesheet" href="style.css">
+<meta name="theme-color" content="#181521">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Viralizar">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script src="pwa.js" defer></script>
 </head>
 <body>
 
@@ -15,6 +23,7 @@
     <a class="nav-item" href="#" onclick="mostrarSecao('pedidos'); return false;">Meus pedidos</a>
     <a class="nav-item" href="#" onclick="mostrarSecao('saldo'); return false;">Adicionar saldo</a>
     <a class="nav-item" href="#" onclick="sair(); return false;">Sair</a>
+    <button type="button" class="btn btn-secundario instalar-lateral" data-install-app>Baixar app</button>
     <div class="saldo-caixa">
       <div class="rotulo">Saldo disponível</div>
       <div class="valor" id="saldo-lateral">R$ 0,00</div>
@@ -59,10 +68,12 @@
     <section id="secao-pedidos" style="display:none">
       <div class="topo-pagina"><h1>Meus pedidos</h1></div>
       <div class="painel-secao">
+        <div class="tabela-rolagem" role="region" aria-label="Tabela: deslize para ver todas as colunas" tabindex="0">
         <table>
           <thead><tr><th>Serviço</th><th>Link</th><th>Qtd.</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead>
           <tbody id="corpo-pedidos"></tbody>
         </table>
+        </div>
         <div class="vazio" id="pedidos-vazio" style="display:none">Você ainda não fez nenhum pedido.</div>
       </div>
     </section>
@@ -107,3 +118,4 @@
 <script src="painel.js"></script>
 </body>
 </html>
+
