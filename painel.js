@@ -62,8 +62,82 @@ async function carregarSaldo() {
 
 
 // ==============================
-// SERVIÇOS
+// SERVIÇOS — CATEGORIAS POR REDE SOCIAL
 // ==============================
+
+// Os serviços vêm de um provedor externo com um campo "categoria" que é,
+// na prática, texto de marketing solto — não uma taxonomia confiável de
+// redes sociais. Por isso a classificação por rede é feita aqui, no
+// front-end, procurando palavras-chave no nome e na categoria de cada
+// serviço. A ordem da lista importa: a primeira rede cujo termo bater é
+// usada, e quem não bater com nada cai em "Outros".
+const redesConfig = [
+    { chave: 'instagram', rotulo: 'Instagram', termos: ['instagram', 'insta', 'ig '] },
+    { chave: 'tiktok', rotulo: 'TikTok', termos: ['tiktok', 'tik tok', 'tikt', 'ttk'] },
+    { chave: 'facebook', rotulo: 'Facebook', termos: ['facebook', 'face'] },
+    { chave: 'youtube', rotulo: 'YouTube', termos: ['youtube', 'yt '] },
+    { chave: 'twitter_x', rotulo: 'X (Twitter)', termos: ['twitter'] },
+    { chave: 'kwai', rotulo: 'Kwai', termos: ['kwai'] },
+    { chave: 'twitch', rotulo: 'Twitch', termos: ['twitch'] },
+    { chave: 'telegram', rotulo: 'Telegram', termos: ['telegram', 'tele '] },
+    { chave: 'threads', rotulo: 'Threads', termos: ['threads'] },
+    { chave: 'discord', rotulo: 'Discord', termos: ['discord'] },
+    { chave: 'shopee', rotulo: 'Shopee', termos: ['shopee'] },
+    { chave: 'outros', rotulo: 'Outros', termos: [] }
+];
+
+// Sinais fracos: só usados quando nenhuma rede bateu pelos termos fortes
+// acima. Isso evita que, por exemplo, um serviço de "reels" do Facebook
+// (que já bate no termo forte "facebook") seja roubado pelo Instagram só
+// por causa da palavra "reels".
+const redesFallback = [
+    { chave: 'instagram', termos: ['reels', 'igtv'] }
+];
+
+// Alguns serviços do provedor são apenas placeholders internos quebrados
+// ou desatualizados e nunca deveriam aparecer para o cliente.
+function ehLixo(servico) {
+    const nome = (servico.nome || '').toLowerCase();
+    const categoria = (servico.categoria || '').toLowerCase();
+
+    return (
+        nome.indexOf('não use') !== -1 ||
+        nome.indexOf('nao use') !== -1 ||
+        nome.indexOf('interno') !== -1 ||
+        (categoria.indexOf('desatualizado') !== -1 && categoria.indexOf('lentos') !== -1)
+    );
+}
+
+// Classifica um serviço em uma rede social a partir do nome e da categoria.
+function detectarRede(servico) {
+    const texto = (
+        (servico.nome || '') + ' ' + (servico.categoria || '')
+    ).toLowerCase();
+
+    for (let i = 0; i < redesConfig.length; i++) {
+        const rede = redesConfig[i];
+
+        if (rede.chave === 'outros') continue;
+
+        for (let j = 0; j < rede.termos.length; j++) {
+            if (texto.indexOf(rede.termos[j]) !== -1) {
+                return rede.chave;
+            }
+        }
+    }
+
+    for (let i = 0; i < redesFallback.length; i++) {
+        const rede = redesFallback[i];
+
+        for (let j = 0; j < rede.termos.length; j++) {
+            if (texto.indexOf(rede.termos[j]) !== -1) {
+                return rede.chave;
+            }
+        }
+    }
+
+    return 'outros';
+}
 
 async function carregarServicos() {
     const snap = await db
@@ -71,28 +145,15 @@ async function carregarServicos() {
         .where('ativo', '==', true)
         .get();
 
-    servicosCache = snap.docs.map(d => ({
-        id: d.id,
-        ...d.data()
-    }));
+    servicosCache = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(s => !ehLixo(s));
 
-    const sel =
-        document.getElementById('sel-servico');
+    servicosCache.forEach(s => {
+        s.rede = detectarRede(s);
+    });
 
-    sel.innerHTML = servicosCache
-        .map(s =>
-            '<option value="' + escapeHtml(s.id) + '">' +
-            escapeHtml(s.nome) + ' — ' + escapeHtml(s.categoria) +
-            '</option>'
-        )
-        .join('');
-
-    atualizarDetalheServico();
-
-    sel.addEventListener(
-        'change',
-        atualizarDetalheServico
-    );
+    renderizarCategorias();
 
     document
         .getElementById('inp-qtd')
@@ -100,6 +161,69 @@ async function carregarServicos() {
             'input',
             atualizarDetalheServico
         );
+}
+
+
+// Monta os cartões de categoria (uma rede social por cartão), mostrando
+// apenas as redes que realmente têm serviços disponíveis no momento.
+function renderizarCategorias() {
+    const grade =
+        document.getElementById('grade-redes');
+
+    const contagens = {};
+
+    servicosCache.forEach(s => {
+        contagens[s.rede] = (contagens[s.rede] || 0) + 1;
+    });
+
+    const redesComServicos = redesConfig.filter(
+        r => contagens[r.chave] > 0
+    );
+
+    grade.innerHTML = redesComServicos
+        .map(r =>
+            '<div class="cartao cartao-clicavel" onclick="selecionarRede(\'' + r.chave + '\')">' +
+                '<div class="rotulo">' + escapeHtml(r.rotulo) + '</div>' +
+                '<div class="valor">' + contagens[r.chave] + '</div>' +
+                '<div class="rotulo">serviço' + (contagens[r.chave] === 1 ? '' : 's') + '</div>' +
+            '</div>'
+        )
+        .join('');
+}
+
+
+// Abre a lista de serviços de uma rede social específica, preenchendo o
+// formulário de pedido apenas com os serviços daquela categoria.
+function selecionarRede(chave) {
+    const servicosDaRede =
+        servicosCache.filter(s => s.rede === chave);
+
+    const sel =
+        document.getElementById('sel-servico');
+
+    sel.innerHTML = servicosDaRede
+        .map(s =>
+            '<option value="' + escapeHtml(s.id) + '">' +
+            escapeHtml(s.nome) +
+            '</option>'
+        )
+        .join('');
+
+    sel.onchange = atualizarDetalheServico;
+
+    document.getElementById('inp-qtd').value = '';
+
+    atualizarDetalheServico();
+
+    document.getElementById('pedido-categorias').style.display = 'none';
+    document.getElementById('pedido-formulario').style.display = 'block';
+}
+
+
+// Volta da tela de serviços para a grade de categorias.
+function voltarCategorias() {
+    document.getElementById('pedido-formulario').style.display = 'none';
+    document.getElementById('pedido-categorias').style.display = 'block';
 }
 
 
@@ -192,7 +316,7 @@ async function criarPedido() {
     }
 
 
-    // Verifica se quantidade é inteira
+    // Verifica se quantidade é inteiro
     if (!Number.isInteger(quantidade)) {
         erroEl.textContent =
             'Quantidade deve ser um número inteiro.';
