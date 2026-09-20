@@ -36,8 +36,13 @@ auth.onAuthStateChanged(async (user) => {
 
     usuarioAtual = user;
 
-    await carregarSaldo();
-    await carregarServicos();
+    // Saldo e serviços são independentes um do outro, então buscamos os
+    // dois ao mesmo tempo em vez de esperar um terminar para começar o
+    // outro — isso evita que o primeiro login pareça travado.
+    await Promise.all([
+        carregarSaldo(),
+        carregarServicos()
+    ]);
 
     escutarPedidos();
 });
@@ -140,6 +145,12 @@ function detectarRede(servico) {
 }
 
 async function carregarServicos() {
+    // Mostra uma mensagem de carregamento no lugar dos cartões enquanto
+    // a busca no Firestore não termina, para a tela não parecer vazia
+    // ou travada no primeiro login.
+    document.getElementById('grade-redes').innerHTML =
+        '<p class="vazio">Carregando serviços…</p>';
+
     const snap = await db
         .collection('services')
         .where('ativo', '==', true)
@@ -715,7 +726,38 @@ function rotuloStatus(status) {
 // NAVEGAÇÃO
 // ==============================
 
+// ==============================
+// MENU LATERAL (CELULAR)
+// ==============================
+
+function alternarMenu() {
+    const lateral = document.getElementById('lateral');
+    const backdrop = document.getElementById('menu-backdrop');
+
+    const aberto = lateral.classList.toggle('aberta');
+
+    if (backdrop) {
+        backdrop.classList.toggle('visivel', aberto);
+    }
+}
+
+function fecharMenu() {
+    document.getElementById('lateral').classList.remove('aberta');
+
+    const backdrop = document.getElementById('menu-backdrop');
+
+    if (backdrop) {
+        backdrop.classList.remove('visivel');
+    }
+}
+
+
 function mostrarSecao(nome) {
+
+    // No celular, o menu lateral fica aberto por cima do conteúdo até
+    // o usuário escolher uma opção. Sem fechar aqui, a seção nova ficava
+    // escondida atrás do próprio menu ainda aberto.
+    fecharMenu();
 
     [
         'pedido',
