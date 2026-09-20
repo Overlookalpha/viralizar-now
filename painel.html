@@ -30,8 +30,10 @@
     </div>
   </nav>
 
+  <div class="menu-backdrop" id="menu-backdrop" onclick="fecharMenu()"></div>
+
   <main class="conteudo">
-    <button class="botao-menu-movel" onclick="document.getElementById('lateral').classList.toggle('aberta')">Menu</button>
+    <button class="botao-menu-movel" onclick="alternarMenu()">Menu</button>
 
     <section id="secao-pedido">
       <div class="topo-pagina">
@@ -40,7 +42,7 @@
 
       <div id="pedido-categorias">
         <p style="color: var(--papel-fosco); font-size: 0.9rem;">Escolha a rede social para ver os serviços disponíveis.</p>
-        <div class="grade-cartoes" id="grade-redes"></div>
+        <div class="grade-cartoes" id="grade-redes"><p class="vazio">Carregando serviços…</p></div>
       </div>
 
       <div id="pedido-formulario" style="display:none">
