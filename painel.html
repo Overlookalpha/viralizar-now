@@ -29,22 +29,30 @@
         <h1>Novo pedido</h1>
       </div>
 
-      <div class="painel-secao">
-        <div class="campo">
-          <label for="sel-servico">Serviço</label>
-          <select id="sel-servico"></select>
+      <div id="pedido-categorias">
+        <p style="color: var(--papel-fosco); font-size: 0.9rem;">Escolha a rede social para ver os serviços disponíveis.</p>
+        <div class="grade-cartoes" id="grade-redes"></div>
+      </div>
+
+      <div id="pedido-formulario" style="display:none">
+        <button class="btn btn-secundario" onclick="voltarCategorias()" style="margin-bottom:1.2rem;">← Voltar às categorias</button>
+        <div class="painel-secao">
+          <div class="campo">
+            <label for="sel-servico">Serviço</label>
+            <select id="sel-servico"></select>
+          </div>
+          <div class="campo">
+            <label for="inp-link">Link do perfil ou publicação</label>
+            <input type="text" id="inp-link" placeholder="https://instagram.com/seuusuario">
+          </div>
+          <div class="campo">
+            <label for="inp-qtd">Quantidade</label>
+            <input type="number" id="inp-qtd" min="1">
+          </div>
+          <p id="detalhe-servico" style="color: var(--papel-fosco); font-size: 0.85rem;"></p>
+          <div class="erro-msg" id="erro-pedido"></div>
+          <button class="btn btn-primario" onclick="criarPedido()">Fazer pedido — <span id="preco-estimado">R$ 0,00</span></button>
         </div>
-        <div class="campo">
-          <label for="inp-link">Link do perfil ou publicação</label>
-          <input type="text" id="inp-link" placeholder="https://instagram.com/seuusuario">
-        </div>
-        <div class="campo">
-          <label for="inp-qtd">Quantidade</label>
-          <input type="number" id="inp-qtd" min="1">
-        </div>
-        <p id="detalhe-servico" style="color: var(--papel-fosco); font-size: 0.85rem;"></p>
-        <div class="erro-msg" id="erro-pedido"></div>
-        <button class="btn btn-primario" onclick="criarPedido()">Fazer pedido — <span id="preco-estimado">R$ 0,00</span></button>
       </div>
     </section>
 
