@@ -257,6 +257,17 @@ button, input, select {
 .cartao .valor.coral { color: var(--coral); }
 .cartao .valor.salvia { color: var(--salvia); }
 
+.cartao-clicavel {
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+.cartao-clicavel:hover {
+  border-color: var(--coral);
+  transform: translateY(-2px);
+  background: rgba(255,107,84,0.06);
+}
+.cartao-clicavel:active { transform: translateY(0); }
+
 .painel-secao {
   background: var(--tinta-alta);
   border: 1px solid var(--linha);
