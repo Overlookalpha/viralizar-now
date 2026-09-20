@@ -172,7 +172,21 @@ function escutarUsuarios() {
   });
 }
 
+function alternarMenu() {
+  const lateral = document.getElementById('lateral');
+  const backdrop = document.getElementById('menu-backdrop');
+  const aberto = lateral.classList.toggle('aberta');
+  if (backdrop) backdrop.classList.toggle('visivel', aberto);
+}
+
+function fecharMenu() {
+  document.getElementById('lateral').classList.remove('aberta');
+  const backdrop = document.getElementById('menu-backdrop');
+  if (backdrop) backdrop.classList.remove('visivel');
+}
+
 function mostrarSecao(nome) {
+  fecharMenu();
   ['visao', 'servicos', 'pedidos', 'usuarios'].forEach(s => {
     document.getElementById('secao-' + s).style.display = s === nome ? 'block' : 'none';
   });
