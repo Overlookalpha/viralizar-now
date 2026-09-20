@@ -220,11 +220,11 @@ function selecionarRede(chave) {
         )
         .join('');
 
-    sel.onchange = atualizarDetalheServico;
+    sel.onchange = aplicarLimitesServico;
 
     document.getElementById('inp-qtd').value = '';
 
-    atualizarDetalheServico();
+    aplicarLimitesServico();
 
     document.getElementById('pedido-categorias').style.display = 'none';
     document.getElementById('pedido-formulario').style.display = 'block';
@@ -252,7 +252,11 @@ function servicoSelecionado() {
 // DETALHES DO SERVIÇO
 // ==============================
 
-function atualizarDetalheServico() {
+// Define os limites (mínimo/máximo) e um valor inicial de quantidade.
+// Só deve ser chamada quando o SERVIÇO muda (seleção nova ou troca no
+// dropdown) — nunca a cada tecla digitada, senão o valor que o usuário
+// está digitando é apagado e substituído pelo mínimo no meio da digitação.
+function aplicarLimitesServico() {
     const s = servicoSelecionado();
 
     const qtdInput =
@@ -266,6 +270,22 @@ function atualizarDetalheServico() {
     if (!qtdInput.value) {
         qtdInput.value = s.min;
     }
+
+    atualizarDetalheServico();
+}
+
+
+// Recalcula apenas o texto de detalhes e o preço estimado a partir do
+// valor atual do campo — chamada a cada tecla digitada. Nunca deve
+// alterar qtdInput.value, para não atrapalhar o usuário enquanto digita
+// (por exemplo, ao selecionar tudo e digitar um novo número por cima).
+function atualizarDetalheServico() {
+    const s = servicoSelecionado();
+
+    const qtdInput =
+        document.getElementById('inp-qtd');
+
+    if (!s) return;
 
     document.getElementById(
         'detalhe-servico'
