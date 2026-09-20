@@ -317,3 +317,42 @@ th { color: var(--papel-fosco); font-weight: 500; font-size: 0.78rem; }
   font-size: 0.9rem;
   padding: 1.5rem 0;
 }
+
+/* ---------- Botão flutuante de suporte via WhatsApp ---------- */
+.botao-whatsapp {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  z-index: 60;
+  text-decoration: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.botao-whatsapp:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+}
+.botao-whatsapp svg {
+  width: 30px;
+  height: 30px;
+  fill: #fff;
+}
+@media (max-width: 600px) {
+  .botao-whatsapp {
+    right: 1rem;
+    bottom: 1rem;
+    width: 50px;
+    height: 50px;
+  }
+  .botao-whatsapp svg {
+    width: 26px;
+    height: 26px;
+  }
+}
